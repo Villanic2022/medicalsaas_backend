@@ -1,0 +1,262 @@
+{
+	"info": {
+		"_postman_id": "tenant-management-collection",
+		"name": "Administración de Tenants",
+		"description": "Endpoints para gestionar tenants/consultorios en el sistema médico SaaS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login Admin",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"admin@medical-saas.com\",\n  \"password\": \"admin123\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			}
+		},
+		{
+			"name": "Listar Tenants",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/tenants",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"tenants"
+					]
+				}
+			}
+		},
+		{
+			"name": "Obtener Tenant por ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/tenants/{{tenant_id}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"tenants",
+						"{{tenant_id}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Obtener Tenant por Slug",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/tenants/slug/{{tenant_slug}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"tenants",
+						"slug",
+						"{{tenant_slug}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Crear Tenant",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Consultorio Dr. López\",\n  \"slug\": \"consultorio-lopez\",\n  \"email\": \"contacto@consultorio-lopez.com\",\n  \"phone\": \"011-2345-6789\",\n  \"address\": \"Av. Rivadavia 1500, CABA\",\n  \"city\": \"Buenos Aires\",\n  \"timezone\": \"America/Argentina/Buenos_Aires\",\n  \"appointmentDurationMinutes\": 30\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/admin/tenants",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"tenants"
+					]
+				}
+			}
+		},
+		{
+			"name": "Actualizar Tenant",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Consultorio Dr. López Actualizado\",\n  \"slug\": \"consultorio-lopez\",\n  \"email\": \"nuevo@consultorio-lopez.com\",\n  \"phone\": \"011-2345-6789\",\n  \"address\": \"Nueva dirección 456\",\n  \"city\": \"Buenos Aires\",\n  \"timezone\": \"America/Argentina/Buenos_Aires\",\n  \"appointmentDurationMinutes\": 45\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/admin/tenants/{{tenant_id}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"tenants",
+						"{{tenant_id}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Activar Tenant",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/tenants/{{tenant_id}}/activate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"tenants",
+						"{{tenant_id}}",
+						"activate"
+					]
+				}
+			}
+		},
+		{
+			"name": "Desactivar Tenant",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/tenants/{{tenant_id}}/deactivate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"tenants",
+						"{{tenant_id}}",
+						"deactivate"
+					]
+				}
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "tenant_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "tenant_slug",
+			"value": "consultorio-dental",
+			"type": "string"
+		}
+	]
+}

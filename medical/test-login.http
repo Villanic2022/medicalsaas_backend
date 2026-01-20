@@ -1,0 +1,26 @@
+### Test de Login para verificar tenantSlug
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@medical-saas.com",
+  "password": "admin123"
+}
+
+### Test de Login Owner
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "owner@demo-clinic.com",
+  "password": "owner123"
+}
+
+### Test de Login Staff
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "staff@demo-clinic.com",
+  "password": "staff123"
+}

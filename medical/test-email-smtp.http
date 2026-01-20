@@ -1,0 +1,58 @@
+### ===== CONFIGURACIÓN DE EMAIL SMTP =====
+
+### 1. Probar configuración de email
+POST http://localhost:8080/api/auth/test-email?email=villanicolas86@gmail.com
+Content-Type: application/json
+
+### 2. Probar recuperación de contraseña (envío real)
+POST http://localhost:8080/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "juan@consultorio-perex.com"
+}
+
+### 3. Probar recuperación con tu email personal
+POST http://localhost:8080/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "villanicolas86@gmail.com"
+}
+
+### 3. Validar token de reset
+GET http://localhost:8080/api/auth/validate-reset-token?token=tu-token-aqui
+Content-Type: application/json
+
+### 4. Resetear contraseña usando token
+POST http://localhost:8080/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "tu-token-aqui",
+  "newPassword": "nuevaContrasena123!"
+}
+
+### ===== INSTRUCCIONES =====
+###
+### ANTES DE PROBAR:
+### 1. Configura tu Gmail App Password en application.properties:
+###    spring.mail.username=tu-email@gmail.com
+###    spring.mail.password=tu-app-password-16-caracteres
+###
+### 2. Reemplaza 'tu-email@gmail.com' en las pruebas con tu email real
+###
+### 3. Para generar App Password de Gmail:
+###    - Ve a tu cuenta de Google
+###    - Seguridad > Verificación en 2 pasos (activar si no está)
+###    - Contraseñas de aplicaciones > Generar nueva
+###    - Selecciona "Correo" > Copia el password de 16 caracteres
+###
+### FLUJO DE PRUEBA:
+### 1. POST /test-email → Verificar que llega email de prueba
+### 2. POST /forgot-password → Verificar que llega email con link
+### 3. Copiar token del email recibido
+### 4. GET /validate-reset-token → Confirmar que token es válido
+### 5. POST /reset-password → Cambiar contraseña y verificar confirmación
+###
+### ===== END INSTRUCTIONS =====

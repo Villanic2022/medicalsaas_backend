@@ -1,0 +1,59 @@
+### Test Insurance Companies API
+### GET all insurance companies
+GET http://localhost:8080/api/insurance-companies
+Authorization: Bearer {{token}}
+
+###
+
+### Test Professionals with Insurance and Pricing
+### GET all professionals (should now include pricing and accepted insurances)
+GET http://localhost:8080/api/professionals
+Authorization: Bearer {{token}}
+
+###
+
+### POST - Create professional with pricing and insurances
+POST http://localhost:8080/api/professionals
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "specialtyId": 1,
+  "firstName": "Dr. Juan",
+  "lastName": "Pérez",
+  "licenseNumber": "MP12345",
+  "email": "juan.perez@example.com",
+  "phone": "+5491234567890",
+  "bio": "Especialista en medicina general con 10 años de experiencia",
+  "privateConsultationPrice": 25000,
+  "acceptedInsurances": [1, 2, 3],
+  "active": true
+}
+
+###
+
+### PUT - Update professional with new pricing and insurances
+PUT http://localhost:8080/api/professionals/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "specialtyId": 1,
+  "firstName": "Dr. Juan Carlos",
+  "lastName": "Pérez",
+  "licenseNumber": "MP12345",
+  "email": "juan.perez@example.com",
+  "phone": "+5491234567890",
+  "bio": "Especialista en medicina general con 15 años de experiencia",
+  "privateConsultationPrice": 30000,
+  "acceptedInsurances": [1, 4, 5],
+  "active": true
+}
+
+###
+
+### Test specific professional with insurances
+GET http://localhost:8080/api/professionals/1
+Authorization: Bearer {{token}}
+
+###

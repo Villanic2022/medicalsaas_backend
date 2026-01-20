@@ -1,0 +1,510 @@
+{
+	"info": {
+		"_postman_id": "medical-api-complete-v1",
+		"name": "Medical SaaS API - Complete Collection",
+		"description": "Colección completa para la API Medical SaaS con autenticación y endpoints públicos",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{bearerToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		},
+		{
+			"key": "bearerToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "tenantSlug",
+			"value": "demo-clinic",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('bearerToken', response.token);",
+									"    pm.globals.set('bearerToken', response.token);",
+									"    console.log('Token guardado:', response.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"owner@demo-clinic.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "Register Tenant",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Clínica Demo\",\n    \"slug\": \"demo-clinic\",\n    \"email\": \"contacto@demo-clinic.com\",\n    \"phone\": \"+54 11 1234-5678\",\n    \"address\": \"Av. Corrientes 1234\",\n    \"city\": \"Buenos Aires\",\n    \"ownerFirstName\": \"Dr. Juan\",\n    \"ownerLastName\": \"Pérez\",\n    \"ownerEmail\": \"owner@demo-clinic.com\",\n    \"ownerPassword\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register-tenant",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register-tenant"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Public API (Frontend)",
+			"item": [
+				{
+					"name": "Get Tenant Info",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/t/{{tenantSlug}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"t",
+								"{{tenantSlug}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Professionals",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/t/{{tenantSlug}}/professionals",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"t",
+								"{{tenantSlug}}",
+								"professionals"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specialties",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/t/{{tenantSlug}}/specialties",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"t",
+								"{{tenantSlug}}",
+								"specialties"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Appointment (Public)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"professionalId\": 1,\n    \"startDateTime\": \"2025-01-15T09:00:00\",\n    \"notes\": \"Primera consulta\",\n    \"patient\": {\n        \"dni\": \"12345678\",\n        \"firstName\": \"Nicolas\",\n        \"lastName\": \"Gonzalez\",\n        \"email\": \"nicolas@email.com\",\n        \"phone\": \"+54 9 11 1234-5678\",\n        \"insuranceName\": \"OSDE\",\n        \"insuranceNumber\": \"123456789\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/t/{{tenantSlug}}/appointments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"t",
+								"{{tenantSlug}}",
+								"appointments"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin - Tenants",
+			"item": [
+				{
+					"name": "Get My Tenant",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/tenants/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tenants",
+								"me"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Tenant",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Clínica Demo Actualizada\",\n    \"email\": \"contacto@demo-clinic.com\",\n    \"phone\": \"+54 11 1234-5678\",\n    \"address\": \"Av. Corrientes 1234, Piso 2\",\n    \"city\": \"Buenos Aires\",\n    \"appointmentDurationMinutes\": 30\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/tenants/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tenants",
+								"me"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin - Professionals",
+			"item": [
+				{
+					"name": "List Professionals",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/professionals",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"professionals"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Professional",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Dr. Carlos\",\n    \"lastName\": \"Rodriguez\",\n    \"specialtyId\": 1,\n    \"licenseNumber\": \"MP12345\",\n    \"email\": \"carlos.rodriguez@demo-clinic.com\",\n    \"phone\": \"+54 11 9876-5432\",\n    \"bio\": \"Especialista en medicina general con 15 años de experiencia\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/professionals",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"professionals"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Professional",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/professionals/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"professionals",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Professional",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Dr. Carlos Alberto\",\n    \"lastName\": \"Rodriguez\",\n    \"specialtyId\": 1,\n    \"licenseNumber\": \"MP12345\",\n    \"email\": \"carlos.rodriguez@demo-clinic.com\",\n    \"phone\": \"+54 11 9876-5432\",\n    \"bio\": \"Especialista en medicina general con 15 años de experiencia. Atención a adultos y adolescentes.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/professionals/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"professionals",
+								"1"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin - Specialties",
+			"item": [
+				{
+					"name": "List Specialties",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/specialties",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"specialties"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin - Appointments",
+			"item": [
+				{
+					"name": "List Appointments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/appointments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Appointment",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/appointments/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Appointment Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/appointments/1/status?status=COMPLETED",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments",
+								"1",
+								"status"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "COMPLETED",
+									"description": "CONFIRMED, CANCELLED, COMPLETED"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Cancel Appointment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/appointments/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments",
+								"1"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Development & Testing",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					}
+				},
+				{
+					"name": "API Documentation",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/swagger-ui.html",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"swagger-ui.html"
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+}
+

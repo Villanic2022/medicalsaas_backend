@@ -1,0 +1,73 @@
+### Test de creación de especialidad
+POST http://localhost:8080/api/specialties
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWFuQGNvbnN1bHRvcmlvLXBlcmV4LmNvbSIsInJvbGVzIjpbIlJPTEVfT1dORVIiXSwidGVuYW50SWQiOiJmMGUwYjYwMy0yYmViLTQ1NDUtODE3MC0zMmYxNzNiMjY0ZjUiLCJpYXQiOjE3MzY0NDYyMjUsImV4cCI6MTczNjUzMjYyNX0.uh7q8lf0ysVAqU56D2R9nIgPDJkQCz6_ZGdoiLXqDZM
+
+{
+  "name": "Pediatría",
+  "description": "Especialidad médica dedicada al cuidado de la salud infantil y adolescente"
+}
+
+### Test sin descripción (opcional)
+POST http://localhost:8080/api/specialties
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWFuQGNvbnN1bHRvcmlvLXBlcmV4LmNvbSIsInJvbGVzIjpbIlJPTEVfT1dORVIiXSwidGVuYW50SWQiOiJmMGUwYjYwMy0yYmViLTQ1NDUtODE3MC0zMmYxNzNiMjY0ZjUiLCJpYXQiOjE3MzY0NDYyMjUsImV4cCI6MTczNjUzMjYyNX0.uh7q8lf0ysVAqU56D2R9nIgPDJkQCz6_ZGdoiLXqDZM
+
+{
+  "name": "Dermatología"
+}
+
+### Test con datos inválidos - name vacío
+POST http://localhost:8080/api/specialties
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWFuQGNvbnN1bHRvcmlvLXBlcmV4LmNvbSIsInJvbGVzIjpbIlJPTEVfT1dORVIiXSwidGVuYW50SWQiOiJmMGUwYjYwMy0yYmViLTQ1NDUtODE3MC0zMmYxNzNiMjY0ZjUiLCJpYXQiOjE3MzY0NDYyMjUsImV4cCI6MTczNjUzMjYyNX0.uh7q8lf0ysVAqU56D2R9nIgPDJkQCz6_ZGdoiLXqDZM
+
+{
+  "name": "",
+  "description": "Especialidad sin nombre válido"
+}
+
+### ESCENARIO DE REACTIVACIÓN: 
+### 1. Primero crear una especialidad nueva
+POST http://localhost:8080/api/specialties
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWFuQGNvbnN1bHRvcmlvLXBlcmV4LmNvbSIsInJvbGVzIjpbIlJPTEVfT1dORVIiXSwidGVuYW50SWQiOiJmMGUwYjYwMy0yYmViLTQ1NDUtODE3MC0zMmYxNzNiMjY0ZjUiLCJpYXQiOjE3MzY0NDYyMjUsImV4cCI6MTczNjUzMjYyNX0.uh7q8lf0ysVAqU56D2R9nIgPDJkQCz6_ZGdoiLXqDZM
+
+{
+  "name": "Prueba Reactivación",
+  "description": "Especialidad para probar reactivación"
+}
+
+### 2. Luego desactivarla (usar el ID que retorne el POST anterior)
+DELETE http://localhost:8080/api/specialties/10
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWFuQGNvbnN1bHRvcmlvLXBlcmV4LmNvbSIsInJvbGVzIjpbIlJPTEVfT1dORVIiXSwidGVuYW50SWQiOiJmMGUwYjYwMy0yYmViLTQ1NDUtODE3MC0zMmYxNzNiMjY0ZjUiLCJpYXQiOjE3MzY0NDYyMjUsImV4cCI6MTczNjUzMjYyNX0.uh7q8lf0ysVAqU56D2R9nIgPDJkQCz6_ZGdoiLXqDZM
+
+### 3. Intentar crearla otra vez (debería REACTIVAR la existente en lugar de crear nueva)
+POST http://localhost:8080/api/specialties
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWFuQGNvbnN1bHRvcmlvLXBlcmV4LmNvbSIsInJvbGVzIjpbIlJPTEVfT1dORVIiXSwidGVuYW50SWQiOiJmMGUwYjYwMy0yYmViLTQ1NDUtODE3MC0zMmYxNzNiMjY0ZjUiLCJpYXQiOjE3MzY0NDYyMjUsImV4cCI6MTczNjUzMjYyNX0.uh7q8lf0ysVAqU56D2R9nIgPDJkQCz6_ZGdoiLXqDZM
+
+{
+  "name": "Prueba Reactivación",
+  "description": "Especialidad reactivada con nueva descripción"
+}
+
+### SOFT DELETE - Desactivar especialidad por ID
+DELETE http://localhost:8080/api/specialties/9
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWFuQGNvbnN1bHRvcmlvLXBlcmV4LmNvbSIsInJvbGVzIjpbIlJPTEVfT1dORVIiXSwidGVuYW50SWQiOiJmMGUwYjYwMy0yYmViLTQ1NDUtODE3MC0zMmYxNzNiMjY0ZjUiLCJpYXQiOjE3MzY0NDYyMjUsImV4cCI6MTczNjUzMjYyNX0.uh7q8lf0ysVAqU56D2R9nIgPDJkQCz6_ZGdoiLXqDZM
+
+### Test desactivar especialidad inexistente
+DELETE http://localhost:8080/api/specialties/99999
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWFuQGNvbnN1bHRvcmlvLXBlcmV4LmNvbSIsInJvbGVzIjpbIlJPTEVfT1dORVIiXSwidGVuYW50SWQiOiJmMGUwYjYwMy0yYmViLTQ1NDUtODE3MC0zMmYxNzNiMjY0ZjUiLCJpYXQiOjE3MzY0NDYyMjUsImV4cCI6MTczNjUzMjYyNX0.uh7q8lf0ysVAqU56D2R9nIgPDJkQCz6_ZGdoiLXqDZM
+
+### Obtener todas las especialidades para verificar las creadas
+GET http://localhost:8080/api/public/specialties
+Content-Type: application/json
+
+### Obtener especialidades con autorización (endpoint protegido)
+GET http://localhost:8080/api/specialties
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWFuQGNvbnN1bHRvcmlvLXBlcmV4LmNvbSIsInJvbGVzIjpbIlJPTEVfT1dORVIiXSwidGVuYW50SWQiOiJmMGUwYjYwMy0yYmViLTQ1NDUtODE3MC0zMmYxNzNiMjY0ZjUiLCJpYXQiOjE3MzY0NDYyMjUsImV4cCI6MTczNjUzMjYyNX0.uh7q8lf0ysVAqU56D2R9nIgPDJkQCz6_ZGdoiLXqDZM

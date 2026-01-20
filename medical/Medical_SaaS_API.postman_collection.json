@@ -1,0 +1,401 @@
+{
+  "info": {
+    "name": "Medical SaaS - Gestión de Turnos Médicos",
+    "description": "Colección de APIs para el sistema de gestión de turnos médicos multi-tenant.\n\n🏥 **Tenant Demo**: `demo-clinic`\n📧 **Usuarios de prueba**:\n- ADMIN: `admin@medical-saas.com` / `admin123`\n- OWNER: `owner@demo-clinic.com` / `owner123`\n- STAFF: `staff@demo-clinic.com` / `staff123`\n\n🔗 **Base URLs**:\n- API: `{{base_url}}`\n- Público: `{{base_url}}/t/{{tenant_slug}}`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api"
+    },
+    {
+      "key": "tenant_slug",
+      "value": "demo-clinic"
+    },
+    {
+      "key": "jwt_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "🏥 Endpoints Públicos",
+      "description": "APIs públicas sin autenticación",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/health",
+              "host": ["{{base_url}}"],
+              "path": ["public", "health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Especialidades",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/specialties",
+              "host": ["{{base_url}}"],
+              "path": ["public", "specialties"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔐 Autenticación",
+      "description": "APIs para login y registro",
+      "item": [
+        {
+          "name": "Login - ADMIN",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var response = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', response.token);",
+                  "    console.log('Token guardado:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@medical-saas.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login - OWNER",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var response = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', response.token);",
+                  "    console.log('Token guardado:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"owner@demo-clinic.com\",\n  \"password\": \"owner123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login - STAFF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var response = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', response.token);",
+                  "    console.log('Token guardado:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"staff@demo-clinic.com\",\n  \"password\": \"staff123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏥 APIs por Tenant - {{tenant_slug}}",
+      "description": "APIs públicas específicas por consultorio",
+      "item": [
+        {
+          "name": "Información del Consultorio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/t/{{tenant_slug}}",
+              "host": ["{{base_url}}"],
+              "path": ["t", "{{tenant_slug}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Especialidades del Consultorio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/t/{{tenant_slug}}/specialties",
+              "host": ["{{base_url}}"],
+              "path": ["t", "{{tenant_slug}}", "specialties"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Profesionales del Consultorio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/t/{{tenant_slug}}/professionals",
+              "host": ["{{base_url}}"],
+              "path": ["t", "{{tenant_slug}}", "professionals"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Disponibilidad de Profesional",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/t/{{tenant_slug}}/professionals/1/availability?date=2025-12-30T09:00:00",
+              "host": ["{{base_url}}"],
+              "path": ["t", "{{tenant_slug}}", "professionals", "1", "availability"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2025-12-30T09:00:00"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📅 Gestión de Turnos",
+      "description": "APIs para crear y gestionar turnos",
+      "item": [
+        {
+          "name": "Crear Turno - Particular",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"professionalId\": 1,\n  \"startDateTime\": \"2025-12-30T09:00:00\",\n  \"notes\": \"Primera consulta\",\n  \"patient\": {\n    \"dni\": \"12345678\",\n    \"firstName\": \"Juan\",\n    \"lastName\": \"Pérez\",\n    \"email\": \"juan.perez@email.com\",\n    \"phone\": \"011-1234-5678\",\n    \"insuranceName\": \"Particular\",\n    \"insuranceNumber\": null\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/t/{{tenant_slug}}/appointments",
+              "host": ["{{base_url}}"],
+              "path": ["t", "{{tenant_slug}}", "appointments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear Turno - Obra Social",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"professionalId\": 2,\n  \"startDateTime\": \"2025-12-30T10:00:00\",\n  \"notes\": \"Control de rutina\",\n  \"patient\": {\n    \"dni\": \"87654321\",\n    \"firstName\": \"María\",\n    \"lastName\": \"González\",\n    \"email\": \"maria.gonzalez@email.com\",\n    \"phone\": \"011-8765-4321\",\n    \"insuranceName\": \"OSDE\",\n    \"insuranceNumber\": \"12345678901\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/t/{{tenant_slug}}/appointments",
+              "host": ["{{base_url}}"],
+              "path": ["t", "{{tenant_slug}}", "appointments"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔒 APIs Privadas",
+      "description": "APIs que requieren autenticación JWT",
+      "item": [
+        {
+          "name": "Listar Turnos (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/appointments",
+              "host": ["{{base_url}}"],
+              "path": ["appointments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Turno por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/appointments/1",
+              "host": ["{{base_url}}"],
+              "path": ["appointments", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar Estado de Turno",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/appointments/1/status?status=CONFIRMED",
+              "host": ["{{base_url}}"],
+              "path": ["appointments", "1", "status"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "CONFIRMED"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🗄️ Base de Datos H2",
+      "description": "Acceso a la consola de H2 para debugging",
+      "item": [
+        {
+          "name": "H2 Console",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/h2-console",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["h2-console"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,32 @@
+### Test Login with TenantSlug
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "owner@demo-clinic.com",
+  "password": "owner123"
+}
+
+###
+
+### Login como STAFF
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "staff@demo-clinic.com",
+  "password": "staff123"
+}
+
+###
+
+### Login como ADMIN (sin tenant)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@medical-saas.com",
+  "password": "admin123"
+}
+
+###
