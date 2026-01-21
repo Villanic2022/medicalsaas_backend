@@ -47,8 +47,8 @@ public class SecurityConfig {
             "http://localhost:3000",    // React dev server
             "http://localhost:5173",    // Vite dev server
             "http://127.0.0.1:3000",
-            "http://127.0.0.1:5173",
-            "https://your-domain.com"   // Production domain
+                "http://127.0.0.1:5173",
+                "https://medicalsaas-frontend.onrender.com"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
