@@ -73,6 +73,7 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/api-docs/**").permitAll()
+                    .requestMatchers("/ping").permitAll()
                 
                 // Endpoint temporal para debugging
                 .requestMatchers("/professionals/debug-no-auth").permitAll()
