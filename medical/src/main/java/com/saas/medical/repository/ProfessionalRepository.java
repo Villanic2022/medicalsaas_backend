@@ -38,4 +38,9 @@ public interface ProfessionalRepository extends JpaRepository<Professional, Long
 
     @Query("SELECT p FROM Professional p WHERE p.email = :email AND p.tenantId = :tenantId AND p.active = true")
     Optional<Professional> findActiveByEmailAndTenantId(String email, UUID tenantId);
+
+    @Query("SELECT DISTINCT p FROM Professional p " +
+           "JOIN FETCH p.specialty " +
+           "WHERE p.id = :id AND p.tenantId = :tenantId AND p.active = true")
+    Optional<Professional> findByTenantIdAndId(UUID tenantId, Long id);
 }

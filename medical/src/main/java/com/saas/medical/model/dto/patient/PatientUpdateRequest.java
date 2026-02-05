@@ -2,24 +2,20 @@ package com.saas.medical.model.dto.patient;
 
 import com.saas.medical.model.enums.Gender;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
 
 @Data
-public class PatientRequest {
+public class PatientUpdateRequest {
 
-    @NotBlank(message = "El nombre es requerido")
     @Size(max = 100, message = "El nombre no puede tener más de 100 caracteres")
     private String firstName;
 
-    @NotBlank(message = "El apellido es requerido")
     @Size(max = 100, message = "El apellido no puede tener más de 100 caracteres")
     private String lastName;
 
-    @NotBlank(message = "El DNI es requerido")
     @Size(max = 20, message = "El DNI no puede tener más de 20 caracteres")
     private String dni;
 
@@ -31,7 +27,6 @@ public class PatientRequest {
     @Size(max = 255, message = "El email no puede tener más de 255 caracteres")
     private String email;
 
-    @NotBlank(message = "El teléfono es requerido")
     @Size(max = 50, message = "El teléfono no puede tener más de 50 caracteres")
     private String phone;
 

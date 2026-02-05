@@ -197,14 +197,18 @@ public class AppointmentService {
                 .orElseGet(() -> {
                     // Crear nuevo paciente
                     Patient newPatient = new Patient();
-                    newPatient.setTenantId(tenantId);
+                    // Buscar tenant para la nueva estructura
+                    Tenant tenant = tenantRepository.findById(tenantId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Tenant no encontrado"));
+                    newPatient.setTenant(tenant);
                     newPatient.setDni(request.getPatient().getDni());
                     newPatient.setFirstName(request.getPatient().getFirstName());
                     newPatient.setLastName(request.getPatient().getLastName());
                     newPatient.setEmail(request.getPatient().getEmail());
                     newPatient.setPhone(request.getPatient().getPhone());
-                    newPatient.setInsuranceName(request.getPatient().getInsuranceName());
+                    // Para compatibilidad con la API antigua, usar un valor por defecto
                     newPatient.setInsuranceNumber(request.getPatient().getInsuranceNumber());
+                    newPatient.setActive(true);
 
                     return patientRepository.save(newPatient);
                 });
@@ -233,7 +237,7 @@ public class AppointmentService {
                         .fullName(appointment.getPatient().getFullName())
                         .email(appointment.getPatient().getEmail())
                         .phone(appointment.getPatient().getPhone())
-                        .insuranceName(appointment.getPatient().getInsuranceName())
+
                         .insuranceNumber(appointment.getPatient().getInsuranceNumber())
                         .build())
                 .build();
