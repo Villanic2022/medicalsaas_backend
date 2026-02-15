@@ -115,9 +115,10 @@ public class AuthService {
                 // Para OWNER: crear tenant automáticamente
                 tenant = createTenantForOwner(registerRequest);
             } else {
-                // Para STAFF: debe especificar tenantSlug
+                // Para STAFF y PROFESSIONAL: debe especificar tenantSlug
                 if (registerRequest.getTenantSlug() == null) {
-                    throw new BusinessException("El personal debe especificar a qué consultorio pertenece (tenantSlug)");
+                    String roleDesc = "PROFESSIONAL".equals(roleName) ? "El profesional" : "El personal";
+                    throw new BusinessException(roleDesc + " debe especificar a qué consultorio pertenece (tenantSlug)");
                 }
                 tenant = tenantRepository.findBySlugAndActive(registerRequest.getTenantSlug(), true)
                     .orElseThrow(() -> new ResourceNotFoundException("Tenant no encontrado: " + registerRequest.getTenantSlug()));

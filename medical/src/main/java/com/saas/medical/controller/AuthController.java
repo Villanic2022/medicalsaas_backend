@@ -49,6 +49,14 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/register/professional")
+    @Operation(summary = "Registrar profesional", 
+               description = "Registra un nuevo profesional médico/especialista. Requiere especificar 'tenantSlug' del consultorio al que pertenece.")
+    public ResponseEntity<AuthResponse> registerProfessional(@Valid @RequestBody RegisterRequest registerRequest) {
+        AuthResponse response = authService.register(registerRequest, "PROFESSIONAL");
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/refresh")
     @Operation(summary = "Refrescar token", description = "Genera nuevos tokens usando refresh token")
     public ResponseEntity<AuthResponse> refreshToken(@RequestParam String refreshToken) {
