@@ -70,7 +70,7 @@ public class ClinicalHistoryService {
         UUID tenantId = getCurrentTenantId();
 
         // Verificar que el paciente existe
-        Patient patient = patientRepository.findById(patientId)
+        Patient patient = patientRepository.findByIdWithTenant(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente", "id", patientId));
 
         if (!patient.getTenant().getId().equals(tenantId)) {
@@ -152,7 +152,7 @@ public class ClinicalHistoryService {
         }
 
         // Verificar que el paciente existe
-        Patient patient = patientRepository.findById(patientId)
+        Patient patient = patientRepository.findByIdWithTenant(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente", "id", patientId));
 
         if (!patient.getTenant().getId().equals(tenantId)) {
@@ -254,7 +254,7 @@ public class ClinicalHistoryService {
     }
 
     private void validatePatientAccess(Long patientId, UUID tenantId) {
-        Patient patient = patientRepository.findById(patientId)
+        Patient patient = patientRepository.findByIdWithTenant(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente", "id", patientId));
 
         if (!patient.getTenant().getId().equals(tenantId)) {

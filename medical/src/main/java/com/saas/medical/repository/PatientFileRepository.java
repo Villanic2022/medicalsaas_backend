@@ -12,13 +12,23 @@ import java.util.UUID;
 @Repository
 public interface PatientFileRepository extends JpaRepository<PatientFile, Long> {
 
-    @Query("SELECT pf FROM PatientFile pf WHERE pf.patient.id = :patientId AND pf.tenantId = :tenantId AND pf.active = true ORDER BY pf.createdAt DESC")
+    @Query("SELECT pf FROM PatientFile pf " +
+           "JOIN FETCH pf.patient " +
+           "JOIN FETCH pf.uploadedBy " +
+           "WHERE pf.patient.id = :patientId AND pf.tenantId = :tenantId AND pf.active = true " +
+           "ORDER BY pf.createdAt DESC")
     List<PatientFile> findByPatientIdAndTenantIdOrderByCreatedAtDesc(Long patientId, UUID tenantId);
 
-    @Query("SELECT pf FROM PatientFile pf WHERE pf.id = :id AND pf.tenantId = :tenantId AND pf.active = true")
+    @Query("SELECT pf FROM PatientFile pf " +
+           "JOIN FETCH pf.patient " +
+           "JOIN FETCH pf.uploadedBy " +
+           "WHERE pf.id = :id AND pf.tenantId = :tenantId AND pf.active = true")
     Optional<PatientFile> findByIdAndTenantId(Long id, UUID tenantId);
 
-    @Query("SELECT pf FROM PatientFile pf WHERE pf.id = :id AND pf.patient.id = :patientId AND pf.tenantId = :tenantId AND pf.active = true")
+    @Query("SELECT pf FROM PatientFile pf " +
+           "JOIN FETCH pf.patient " +
+           "JOIN FETCH pf.uploadedBy " +
+           "WHERE pf.id = :id AND pf.patient.id = :patientId AND pf.tenantId = :tenantId AND pf.active = true")
     Optional<PatientFile> findByIdAndPatientIdAndTenantId(Long id, Long patientId, UUID tenantId);
 }
 
