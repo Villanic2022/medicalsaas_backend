@@ -30,5 +30,6 @@ public class AuthResponse {
         private String tenantSlug;
         private String role;
         private Boolean active;
+        private Long professionalId; // ID del profesional si el usuario tiene rol PROFESSIONAL
     }
 }

@@ -8,9 +8,11 @@ import com.saas.medical.model.dto.auth.RegisterRequest;
 import com.saas.medical.model.entity.Role;
 import com.saas.medical.model.entity.Tenant;
 import com.saas.medical.model.entity.User;
+import com.saas.medical.model.entity.Professional;
 import com.saas.medical.repository.RoleRepository;
 import com.saas.medical.repository.TenantRepository;
 import com.saas.medical.repository.UserRepository;
+import com.saas.medical.repository.ProfessionalRepository;
 import com.saas.medical.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +38,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final TenantRepository tenantRepository;
+    private final ProfessionalRepository professionalRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
@@ -76,6 +79,18 @@ public class AuthService {
                 tenantSlug = tenant != null ? tenant.getSlug() : null;
             }
 
+            // Obtener professionalId si el usuario tiene rol PROFESSIONAL
+            Long professionalId = null;
+            if ("PROFESSIONAL".equals(role)) {
+                Professional professional = professionalRepository.findByUserId(user.getId()).orElse(null);
+                if (professional != null) {
+                    professionalId = professional.getId();
+                    log.info("Usuario PROFESSIONAL {} vinculado a professional ID: {}", user.getEmail(), professionalId);
+                } else {
+                    log.warn("Usuario PROFESSIONAL {} no tiene un registro de professional vinculado", user.getEmail());
+                }
+            }
+
             return AuthResponse.builder()
                 .token(token)
                 .refreshToken(refreshToken)
@@ -88,6 +103,7 @@ public class AuthService {
                     .tenantSlug(tenantSlug)
                     .role(role)
                     .active(user.getActive())
+                    .professionalId(professionalId)
                     .build())
                 .build();
 
@@ -240,6 +256,15 @@ public class AuthService {
                 tenantSlug = tenant != null ? tenant.getSlug() : null;
             }
 
+            // Obtener professionalId si el usuario tiene rol PROFESSIONAL
+            Long professionalId = null;
+            if ("PROFESSIONAL".equals(role)) {
+                Professional professional = professionalRepository.findByUserId(user.getId()).orElse(null);
+                if (professional != null) {
+                    professionalId = professional.getId();
+                }
+            }
+
             return AuthResponse.builder()
                 .token(newToken)
                 .refreshToken(newRefreshToken)
@@ -252,6 +277,7 @@ public class AuthService {
                     .tenantSlug(tenantSlug)
                     .role(role)
                     .active(user.getActive())
+                    .professionalId(professionalId)
                     .build())
                 .build();
         }
@@ -286,6 +312,15 @@ public class AuthService {
             tenantSlug = tenant != null ? tenant.getSlug() : null;
         }
 
+        // Obtener professionalId si el usuario tiene rol PROFESSIONAL
+        Long professionalId = null;
+        if ("PROFESSIONAL".equals(role)) {
+            Professional professional = professionalRepository.findByUserId(user.getId()).orElse(null);
+            if (professional != null) {
+                professionalId = professional.getId();
+            }
+        }
+
         return AuthResponse.UserInfo.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -295,6 +330,7 @@ public class AuthService {
                 .tenantSlug(tenantSlug)
                 .role(role)
                 .active(user.getActive())
+                .professionalId(professionalId)
                 .build();
     }
 

@@ -12,9 +12,13 @@ import com.saas.medical.repository.AppointmentRepository;
 import com.saas.medical.repository.PatientRepository;
 import com.saas.medical.repository.ProfessionalRepository;
 import com.saas.medical.repository.TenantRepository;
+import com.saas.medical.repository.UserRepository;
 import com.saas.medical.security.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +36,7 @@ public class AppointmentService {
     private final PatientRepository patientRepository;
     private final ProfessionalRepository professionalRepository;
     private final TenantRepository tenantRepository;
+    private final UserRepository userRepository;
     private final EmailService emailService;
 
     @Transactional
@@ -102,8 +107,30 @@ public class AppointmentService {
     @Transactional(readOnly = true)
     public List<AppointmentResponse> findAppointmentsByCurrentTenant() {
         UUID tenantId = getCurrentTenantId();
-        List<Appointment> appointments = appointmentRepository.findByTenantIdOrderByStartDateTimeDesc(tenantId);
-        
+
+        // Verificar si el usuario es PROFESSIONAL para filtrar solo sus turnos
+        List<Appointment> appointments;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isProfessional = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(auth -> auth.equals("ROLE_PROFESSIONAL"));
+
+        if (isProfessional) {
+            // Obtener el professionalId del usuario autenticado
+            String email = authentication.getName();
+            Long professionalId = getProfessionalIdByEmail(email);
+
+            if (professionalId != null) {
+                log.info("Usuario PROFESSIONAL - filtrando turnos para professionalId: {}", professionalId);
+                appointments = appointmentRepository.findByTenantIdAndProfessionalId(tenantId, professionalId);
+            } else {
+                log.warn("Usuario PROFESSIONAL {} no tiene professional vinculado, retornando lista vacía", email);
+                return List.of();
+            }
+        } else {
+            appointments = appointmentRepository.findByTenantIdOrderByStartDateTimeDesc(tenantId);
+        }
+
         if (appointments.isEmpty()) {
             return List.of();
         }
@@ -115,6 +142,16 @@ public class AppointmentService {
         return appointments.stream()
                 .map(appointment -> mapToResponse(appointment, tenant))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene el professionalId asociado al email del usuario
+     */
+    private Long getProfessionalIdByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .flatMap(user -> professionalRepository.findByUserId(user.getId()))
+                .map(Professional::getId)
+                .orElse(null);
     }
 
     @Transactional(readOnly = true)

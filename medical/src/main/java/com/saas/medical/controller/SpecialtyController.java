@@ -27,7 +27,7 @@ public class SpecialtyController {
 
     @GetMapping
     @Operation(summary = "Listar especialidades", description = "Obtiene todas las especialidades activas")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<List<SpecialtyResponse>> getAllSpecialties() {
         List<SpecialtyResponse> specialties = specialtyService.findAllActive();
         return ResponseEntity.ok(specialties);
@@ -35,7 +35,7 @@ public class SpecialtyController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener especialidad", description = "Obtiene una especialidad por ID")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<SpecialtyResponse> getSpecialty(@PathVariable Long id) {
         SpecialtyResponse specialty = specialtyService.findById(id);
         return ResponseEntity.ok(specialty);

@@ -59,6 +59,10 @@ public class Professional {
     @Column(nullable = false)
     private Boolean active = true;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

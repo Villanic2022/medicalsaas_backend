@@ -11,14 +11,19 @@ import com.saas.medical.model.entity.ProfessionalAvailability;
 import com.saas.medical.model.entity.Specialty;
 import com.saas.medical.model.entity.Tenant;
 import com.saas.medical.model.entity.InsuranceCompany;
+import com.saas.medical.model.entity.User;
+import com.saas.medical.model.entity.Role;
 import com.saas.medical.model.enums.DayOfWeek;
 import com.saas.medical.repository.ProfessionalRepository;
 import com.saas.medical.repository.ProfessionalAvailabilityRepository;
 import com.saas.medical.repository.SpecialtyRepository;
 import com.saas.medical.repository.TenantRepository;
+import com.saas.medical.repository.UserRepository;
+import com.saas.medical.repository.RoleRepository;
 import com.saas.medical.security.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -42,6 +48,9 @@ public class ProfessionalService {
     private final SpecialtyRepository specialtyRepository;
     private final TenantRepository tenantRepository;
     private final InsuranceCompanyService insuranceCompanyService;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public List<ProfessionalResponse> findAllByTenant() {
@@ -187,6 +196,32 @@ public class ProfessionalService {
             throw new BusinessException("La especialidad seleccionada no está activa");
         }
 
+        // Crear usuario si se proporciona password
+        User user = null;
+        if (request.getPassword() != null && !request.getPassword().isBlank() && request.getEmail() != null) {
+            // Validar que no exista un usuario con ese email
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new BusinessException("Ya existe un usuario con este email");
+            }
+
+            // Obtener rol PROFESSIONAL
+            Role professionalRole = roleRepository.findByName("PROFESSIONAL")
+                    .orElseThrow(() -> new BusinessException("Rol PROFESSIONAL no encontrado en el sistema"));
+
+            // Crear el usuario
+            user = new User();
+            user.setEmail(request.getEmail());
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            user.setFirstName(request.getFirstName());
+            user.setLastName(request.getLastName());
+            user.setTenantId(tenantId);
+            user.setRoles(Set.of(professionalRole));
+            user.setActive(true);
+            user.setEmailVerified(true);
+            user = userRepository.save(user);
+            log.info("Usuario PROFESSIONAL creado: {} para tenant: {}", user.getEmail(), tenantId);
+        }
+
         // Crear professional
         Professional professional = new Professional();
         professional.setTenantId(tenantId);
@@ -199,6 +234,11 @@ public class ProfessionalService {
         professional.setBio(request.getBio());
         professional.setPrivateConsultationPrice(request.getPrivateConsultationPrice());
         professional.setActive(request.getActive());
+
+        // Vincular con usuario si se creó
+        if (user != null) {
+            professional.setUser(user);
+        }
 
         // Manejar obras sociales
         if (request.getAcceptedInsurances() != null && !request.getAcceptedInsurances().isEmpty()) {
@@ -221,6 +261,43 @@ public class ProfessionalService {
 
         if (!specialty.getActive()) {
             throw new BusinessException("La especialidad seleccionada no está activa");
+        }
+
+        // Crear o actualizar usuario si se proporciona password
+        if (request.getPassword() != null && !request.getPassword().isBlank() && request.getEmail() != null) {
+            User user = professional.getUser();
+            if (user == null) {
+                // Validar que no exista un usuario con ese email
+                if (userRepository.existsByEmail(request.getEmail())) {
+                    throw new BusinessException("Ya existe un usuario con este email");
+                }
+
+                // Obtener rol PROFESSIONAL
+                Role professionalRole = roleRepository.findByName("PROFESSIONAL")
+                        .orElseThrow(() -> new BusinessException("Rol PROFESSIONAL no encontrado en el sistema"));
+
+                // Crear el usuario
+                user = new User();
+                user.setEmail(request.getEmail());
+                user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+                user.setFirstName(request.getFirstName());
+                user.setLastName(request.getLastName());
+                user.setTenantId(professional.getTenantId());
+                user.setRoles(Set.of(professionalRole));
+                user.setActive(true);
+                user.setEmailVerified(true);
+                user = userRepository.save(user);
+                professional.setUser(user);
+                log.info("Usuario PROFESSIONAL creado para profesional reactivado: {}", user.getEmail());
+            } else {
+                // Actualizar usuario existente
+                user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+                user.setFirstName(request.getFirstName());
+                user.setLastName(request.getLastName());
+                user.setActive(true);
+                userRepository.save(user);
+                log.info("Usuario PROFESSIONAL actualizado: {}", user.getEmail());
+            }
         }
 
         // Actualizar datos del profesional
