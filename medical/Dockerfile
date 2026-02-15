@@ -1,6 +1,12 @@
 # ETAPA 1: Construcción (Build)
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
+
+# Configurar encoding UTF-8
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
+
 COPY . .
 # Compilamos saltando tests para ir más rápido
 RUN mvn clean package -DskipTests
