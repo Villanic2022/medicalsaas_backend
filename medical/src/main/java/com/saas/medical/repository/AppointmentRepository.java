@@ -36,4 +36,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
            "AND a.startDateTime >= :fromDate AND a.startDateTime <= :toDate " +
            "ORDER BY a.startDateTime")
     List<Appointment> findByTenantIdAndDateRange(UUID tenantId, LocalDateTime fromDate, LocalDateTime toDate);
+
+    @Query("SELECT a FROM Appointment a WHERE a.tenantId = :tenantId " +
+           "AND a.professional.id = :professionalId ORDER BY a.startDateTime DESC")
+    List<Appointment> findByTenantIdAndProfessionalId(UUID tenantId, Long professionalId);
 }

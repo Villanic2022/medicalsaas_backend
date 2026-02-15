@@ -25,7 +25,7 @@ public class InsuranceCompanyController {
 
     @GetMapping
     @Operation(summary = "Listar obras sociales", description = "Obtiene todas las obras sociales activas")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<List<InsuranceCompanyResponse>> findAll() {
         List<InsuranceCompanyResponse> companies = insuranceCompanyService.findAllActive();
         return ResponseEntity.ok(companies);

@@ -23,7 +23,7 @@ public class AppointmentController {
 
     @GetMapping
     @Operation(summary = "Listar turnos", description = "Lista todos los turnos del tenant autenticado")
-    @PreAuthorize("hasRole('OWNER') or hasRole('STAFF')")
+    @PreAuthorize("hasAnyRole('OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<List<AppointmentResponse>> getAppointments() {
         List<AppointmentResponse> appointments = appointmentService.findAppointmentsByCurrentTenant();
         return ResponseEntity.ok(appointments);
@@ -31,7 +31,7 @@ public class AppointmentController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener turno por ID", description = "Obtiene los detalles de un turno específico")
-    @PreAuthorize("hasRole('OWNER') or hasRole('STAFF')")
+    @PreAuthorize("hasAnyRole('OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<AppointmentResponse> getAppointment(@PathVariable Long id) {
         AppointmentResponse appointment = appointmentService.findByIdAndCurrentTenant(id);
         return ResponseEntity.ok(appointment);
@@ -39,7 +39,7 @@ public class AppointmentController {
 
     @PutMapping("/{id}/status")
     @Operation(summary = "Actualizar estado", description = "Actualiza el estado de un turno (confirmar/cancelar/completar)")
-    @PreAuthorize("hasRole('OWNER') or hasRole('STAFF')")
+    @PreAuthorize("hasAnyRole('OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<AppointmentResponse> updateStatus(
             @PathVariable Long id,
             @RequestParam String status) {
@@ -49,7 +49,7 @@ public class AppointmentController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Cancelar turno", description = "Cancela un turno médico")
-    @PreAuthorize("hasRole('OWNER') or hasRole('STAFF')")
+    @PreAuthorize("hasAnyRole('OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<Void> cancelAppointment(@PathVariable Long id) {
         appointmentService.cancel(id);
         return ResponseEntity.noContent().build();

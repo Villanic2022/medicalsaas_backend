@@ -34,7 +34,7 @@ public class ProfessionalController {
 
     @GetMapping
     @Operation(summary = "Listar profesionales", description = "Obtiene todos los profesionales del consultorio")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<List<ProfessionalResponse>> findAll() {
         List<ProfessionalResponse> professionals = professionalService.findAllByTenant();
         return ResponseEntity.ok(professionals);
@@ -42,7 +42,7 @@ public class ProfessionalController {
 
     @GetMapping("/debug")
     @Operation(summary = "Debug info", description = "Información de debugging")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<Map<String, Object>> debugInfo() {
         Map<String, Object> debug = new HashMap<>();
         try {
@@ -64,7 +64,7 @@ public class ProfessionalController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener profesional", description = "Obtiene un profesional por ID")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<ProfessionalResponse> findById(@PathVariable Long id) {
         ProfessionalResponse professional = professionalService.findById(id);
         return ResponseEntity.ok(professional);
@@ -99,7 +99,7 @@ public class ProfessionalController {
 
     @GetMapping("/{id}/availability")
     @Operation(summary = "Obtener disponibilidad", description = "Obtiene la configuración de horarios de un profesional")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'PROFESSIONAL')")
     public ResponseEntity<List<ProfessionalAvailabilityResponse>> getAvailability(@PathVariable Long id) {
         List<ProfessionalAvailabilityResponse> availability = professionalService.getAvailability(id);
         return ResponseEntity.ok(availability);
@@ -108,7 +108,7 @@ public class ProfessionalController {
     @GetMapping("/{id}/availability/date/{date}")
     @Operation(summary = "Obtener disponibilidad para fecha específica", 
                description = "Obtiene la disponibilidad para una fecha específica, priorizando configuraciones específicas sobre recurrentes")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'PROFESSIONAL')")
     public ResponseEntity<List<ProfessionalAvailabilityResponse>> getAvailabilityForDate(
             @PathVariable Long id,
             @PathVariable LocalDate date) {

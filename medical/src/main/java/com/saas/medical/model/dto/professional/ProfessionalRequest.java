@@ -34,4 +34,7 @@ public class ProfessionalRequest {
     private List<Long> acceptedInsurances;
 
     private Boolean active = true;
+
+    // Campo para crear usuario asociado al profesional
+    private String password;
 }
