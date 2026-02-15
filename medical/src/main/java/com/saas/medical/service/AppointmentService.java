@@ -221,7 +221,7 @@ public class AppointmentService {
         List<Appointment> existingAppointments = appointmentRepository
                 .findByProfessionalAndDateRange(professionalId, startOfDay, endOfDay);
 
-        // Devolver las citas confirmadas (para que el frontend sepa qué horarios están ocupados)
+        // Devolver las citas confirmadas (para que el frontend sepa qué horarios están ocupados--perfecto para mostrar en el calendario)
         return existingAppointments.stream()
                 .filter(appointment -> appointment.getStatus() == Appointment.AppointmentStatus.CONFIRMED)
                 .map(appointment -> mapToResponse(appointment, tenant))
