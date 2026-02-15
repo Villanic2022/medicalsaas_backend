@@ -116,7 +116,14 @@ public class PatientService {
         UUID tenantId = getCurrentTenantId();
         log.info("Creando paciente para tenant: {} con DNI: {}", tenantId, request.getDni());
         
-        // Validar que el DNI no exista
+        // Verificar si existe un paciente inactivo con ese DNI para reactivarlo
+        Optional<Patient> inactivePatient = patientRepository.findInactiveByTenantIdAndDni(tenantId, request.getDni());
+        if (inactivePatient.isPresent()) {
+            log.info("Reactivando paciente inactivo con DNI: {}", request.getDni());
+            return reactivatePatient(inactivePatient.get(), request);
+        }
+
+        // Validar que el DNI no exista (ahora incluye activos e inactivos)
         if (patientRepository.existsByTenantIdAndDni(tenantId, request.getDni())) {
             throw new BusinessException("Ya existe un paciente con el DNI: " + request.getDni());
         }
@@ -155,6 +162,45 @@ public class PatientService {
         Patient savedPatient = patientRepository.save(patient);
         log.info("Paciente creado exitosamente con ID: {}", savedPatient.getId());
         
+        return mapToPatientResponse(savedPatient);
+    }
+
+    private PatientResponse reactivatePatient(Patient patient, PatientRequest request) {
+        UUID tenantId = getCurrentTenantId();
+
+        // Actualizar datos del paciente con los nuevos valores
+        patient.setFirstName(request.getFirstName());
+        patient.setLastName(request.getLastName());
+        patient.setBirthDate(request.getBirthDate());
+        patient.setGender(request.getGender());
+        patient.setEmail(request.getEmail());
+        patient.setPhone(request.getPhone());
+        patient.setAddress(request.getAddress());
+        patient.setInsuranceNumber(request.getInsuranceNumber());
+        patient.setNotes(request.getNotes());
+        patient.setActive(true); // Reactivar
+
+        // Asignar obra social si se especifica
+        if (request.getInsuranceCompanyId() != null) {
+            InsuranceCompany insurance = insuranceCompanyRepository.findById(request.getInsuranceCompanyId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Obra social no encontrada"));
+            patient.setInsuranceCompany(insurance);
+        } else {
+            patient.setInsuranceCompany(null);
+        }
+
+        // Asignar profesional preferido si se especifica
+        if (request.getPreferredProfessionalId() != null) {
+            Professional professional = professionalRepository.findByTenantIdAndId(tenantId, request.getPreferredProfessionalId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Profesional no encontrado"));
+            patient.setPreferredProfessional(professional);
+        } else {
+            patient.setPreferredProfessional(null);
+        }
+
+        Patient savedPatient = patientRepository.save(patient);
+        log.info("Paciente reactivado exitosamente - ID: {}, DNI: {}", savedPatient.getId(), savedPatient.getDni());
+
         return mapToPatientResponse(savedPatient);
     }
 

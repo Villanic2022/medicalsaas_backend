@@ -23,6 +23,9 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     @Query("SELECT p FROM Patient p WHERE p.tenant.id = :tenantId AND p.id = :id AND p.active = true")
     Optional<Patient> findByTenantIdAndId(UUID tenantId, Long id);
 
+    @Query("SELECT p FROM Patient p JOIN FETCH p.tenant WHERE p.id = :id AND p.active = true")
+    Optional<Patient> findByIdWithTenant(Long id);
+
     // Query nativa de PostgreSQL para evitar problemas con tipos BYTEA
     @Query(value = "SELECT p.* FROM patients p " +
            "LEFT JOIN insurance_companies ic ON ic.id = p.insurance_company_id " +
@@ -54,9 +57,12 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
                                @Param("query") String query, 
                                Pageable pageable);
 
-    @Query("SELECT COUNT(p) > 0 FROM Patient p WHERE p.tenant.id = :tenantId AND p.dni = :dni AND p.id != :excludeId AND p.active = true")
+    @Query("SELECT COUNT(p) > 0 FROM Patient p WHERE p.tenant.id = :tenantId AND p.dni = :dni AND p.id != :excludeId")
     boolean existsByTenantIdAndDniAndIdNot(UUID tenantId, String dni, Long excludeId);
 
-    @Query("SELECT COUNT(p) > 0 FROM Patient p WHERE p.tenant.id = :tenantId AND p.dni = :dni AND p.active = true")
+    @Query("SELECT COUNT(p) > 0 FROM Patient p WHERE p.tenant.id = :tenantId AND p.dni = :dni")
     boolean existsByTenantIdAndDni(UUID tenantId, String dni);
+
+    @Query("SELECT p FROM Patient p WHERE p.tenant.id = :tenantId AND p.dni = :dni AND p.active = false")
+    Optional<Patient> findInactiveByTenantIdAndDni(UUID tenantId, String dni);
 }
