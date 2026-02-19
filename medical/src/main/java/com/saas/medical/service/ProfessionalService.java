@@ -23,6 +23,10 @@ import com.saas.medical.repository.RoleRepository;
 import com.saas.medical.security.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -618,6 +622,141 @@ public class ProfessionalService {
         
         return professionalRepository.findByIdAndTenantId(professionalId, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Professional no encontrado: " + professionalId));
+    }
+
+    /**
+     * Valida que el usuario autenticado con rol PROFESSIONAL solo pueda acceder a su propia disponibilidad.
+     * Los roles ADMIN y OWNER pueden acceder a cualquier profesional.
+     */
+    public void validateProfessionalSelfAccess(Long professionalId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Si el usuario tiene rol ADMIN u OWNER, permitir acceso sin restricción
+        boolean isAdminOrOwner = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(auth -> auth.equals("ROLE_ADMIN") || auth.equals("ROLE_OWNER"));
+
+        if (isAdminOrOwner) {
+            log.debug("Usuario con rol ADMIN/OWNER, acceso permitido al profesional {}", professionalId);
+            return;
+        }
+
+        // Para rol PROFESSIONAL, verificar que solo acceda a su propia disponibilidad
+        String email = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            throw new BusinessException("Usuario no encontrado", HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userOpt.get();
+        Optional<Professional> professionalOpt = professionalRepository.findByUserId(user.getId());
+
+        if (professionalOpt.isEmpty()) {
+            throw new BusinessException("El usuario no tiene un perfil profesional vinculado", HttpStatus.FORBIDDEN);
+        }
+
+        Professional authenticatedProfessional = professionalOpt.get();
+
+        if (!authenticatedProfessional.getId().equals(professionalId)) {
+            log.warn("Profesional {} intentó acceder a disponibilidad del profesional {}",
+                    authenticatedProfessional.getId(), professionalId);
+            throw new BusinessException("No tiene permiso para gestionar la disponibilidad de otro profesional", HttpStatus.FORBIDDEN);
+        }
+
+        log.debug("Profesional {} accediendo a su propia disponibilidad", professionalId);
+    }
+
+    /**
+     * Valida que el usuario autenticado con rol PROFESSIONAL solo pueda eliminar sus propias reglas de disponibilidad.
+     * Los roles ADMIN y OWNER pueden eliminar cualquier disponibilidad.
+     */
+    public void validateAvailabilityOwnership(Long availabilityId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Si el usuario tiene rol ADMIN u OWNER, permitir acceso sin restricción
+        boolean isAdminOrOwner = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(auth -> auth.equals("ROLE_ADMIN") || auth.equals("ROLE_OWNER"));
+
+        if (isAdminOrOwner) {
+            log.debug("Usuario con rol ADMIN/OWNER, acceso permitido para eliminar disponibilidad {}", availabilityId);
+            return;
+        }
+
+        // Para rol PROFESSIONAL, verificar que la disponibilidad le pertenezca
+        UUID tenantId = getCurrentTenantId();
+        ProfessionalAvailability availability = professionalAvailabilityRepository
+                .findByIdAndTenantId(availabilityId, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Disponibilidad no encontrada: " + availabilityId));
+
+        String email = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            throw new BusinessException("Usuario no encontrado", HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userOpt.get();
+        Optional<Professional> professionalOpt = professionalRepository.findByUserId(user.getId());
+
+        if (professionalOpt.isEmpty()) {
+            throw new BusinessException("El usuario no tiene un perfil profesional vinculado", HttpStatus.FORBIDDEN);
+        }
+
+        Professional authenticatedProfessional = professionalOpt.get();
+
+        if (!availability.getProfessional().getId().equals(authenticatedProfessional.getId())) {
+            log.warn("Profesional {} intentó eliminar disponibilidad {} que pertenece al profesional {}",
+                    authenticatedProfessional.getId(), availabilityId, availability.getProfessional().getId());
+            throw new BusinessException("No tiene permiso para eliminar la disponibilidad de otro profesional", HttpStatus.FORBIDDEN);
+        }
+
+        log.debug("Profesional {} eliminando su propia disponibilidad {}", authenticatedProfessional.getId(), availabilityId);
+    }
+
+    /**
+     * Valida acceso para lectura de disponibilidad.
+     * ADMIN, OWNER y STAFF pueden ver cualquier disponibilidad.
+     * PROFESSIONAL solo puede ver su propia disponibilidad.
+     */
+    public void validateProfessionalSelfAccessForRead(Long professionalId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Si el usuario tiene rol ADMIN, OWNER o STAFF, permitir acceso sin restricción
+        boolean isAdminOwnerOrStaff = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(auth -> auth.equals("ROLE_ADMIN") || auth.equals("ROLE_OWNER") || auth.equals("ROLE_STAFF"));
+
+        if (isAdminOwnerOrStaff) {
+            log.debug("Usuario con rol ADMIN/OWNER/STAFF, acceso de lectura permitido al profesional {}", professionalId);
+            return;
+        }
+
+        // Para rol PROFESSIONAL, verificar que solo acceda a su propia disponibilidad
+        String email = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            throw new BusinessException("Usuario no encontrado", HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userOpt.get();
+        Optional<Professional> professionalOpt = professionalRepository.findByUserId(user.getId());
+
+        if (professionalOpt.isEmpty()) {
+            throw new BusinessException("El usuario no tiene un perfil profesional vinculado", HttpStatus.FORBIDDEN);
+        }
+
+        Professional authenticatedProfessional = professionalOpt.get();
+
+        if (!authenticatedProfessional.getId().equals(professionalId)) {
+            log.warn("Profesional {} intentó ver disponibilidad del profesional {}",
+                    authenticatedProfessional.getId(), professionalId);
+            throw new BusinessException("No tiene permiso para ver la disponibilidad de otro profesional", HttpStatus.FORBIDDEN);
+        }
+
+        log.debug("Profesional {} consultando su propia disponibilidad", professionalId);
     }
 
     private void validateAvailabilityRequest(ProfessionalAvailabilityRequest request) {

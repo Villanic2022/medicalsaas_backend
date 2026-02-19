@@ -99,8 +99,11 @@ public class ProfessionalController {
 
     @GetMapping("/{id}/availability")
     @Operation(summary = "Obtener disponibilidad", description = "Obtiene la configuración de horarios de un profesional")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'PROFESSIONAL')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<List<ProfessionalAvailabilityResponse>> getAvailability(@PathVariable Long id) {
+        // STAFF, ADMIN y OWNER pueden ver cualquier disponibilidad
+        // PROFESSIONAL solo puede ver su propia disponibilidad
+        professionalService.validateProfessionalSelfAccessForRead(id);
         List<ProfessionalAvailabilityResponse> availability = professionalService.getAvailability(id);
         return ResponseEntity.ok(availability);
     }
@@ -108,38 +111,47 @@ public class ProfessionalController {
     @GetMapping("/{id}/availability/date/{date}")
     @Operation(summary = "Obtener disponibilidad para fecha específica", 
                description = "Obtiene la disponibilidad para una fecha específica, priorizando configuraciones específicas sobre recurrentes")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'PROFESSIONAL')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'STAFF', 'PROFESSIONAL')")
     public ResponseEntity<List<ProfessionalAvailabilityResponse>> getAvailabilityForDate(
             @PathVariable Long id,
             @PathVariable LocalDate date) {
+        // STAFF, ADMIN y OWNER pueden ver cualquier disponibilidad
+        // PROFESSIONAL solo puede ver su propia disponibilidad
+        professionalService.validateProfessionalSelfAccessForRead(id);
         List<ProfessionalAvailabilityResponse> availability = professionalService.getAvailabilityForDate(id, date);
         return ResponseEntity.ok(availability);
     }
 
     @PostMapping("/{id}/availability")
     @Operation(summary = "Agregar disponibilidad", description = "Agrega una nueva configuración de horario para un profesional")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'PROFESSIONAL')")
     public ResponseEntity<ProfessionalAvailabilityResponse> addAvailability(
             @PathVariable Long id,
             @Valid @RequestBody ProfessionalAvailabilityRequest request) {
+        // Validar que un PROFESSIONAL solo pueda agregar disponibilidad a su propio perfil
+        professionalService.validateProfessionalSelfAccess(id);
         ProfessionalAvailabilityResponse availability = professionalService.addAvailability(id, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(availability);
     }
 
     @PutMapping("/{id}/availability")
     @Operation(summary = "Actualizar disponibilidad", description = "Reemplaza completamente la configuración de horarios de un profesional")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'PROFESSIONAL')")
     public ResponseEntity<List<ProfessionalAvailabilityResponse>> updateAvailability(
             @PathVariable Long id,
             @Valid @RequestBody List<ProfessionalAvailabilityRequest> requests) {
+        // Validar que un PROFESSIONAL solo pueda actualizar disponibilidad de su propio perfil
+        professionalService.validateProfessionalSelfAccess(id);
         List<ProfessionalAvailabilityResponse> availability = professionalService.updateAvailability(id, requests);
         return ResponseEntity.ok(availability);
     }
 
     @DeleteMapping("/availability/{availabilityId}")
     @Operation(summary = "Eliminar disponibilidad", description = "Elimina una configuración específica de horario")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'PROFESSIONAL')")
     public ResponseEntity<Void> deleteAvailability(@PathVariable Long availabilityId) {
+        // Validar que un PROFESSIONAL solo pueda eliminar sus propias reglas de disponibilidad
+        professionalService.validateAvailabilityOwnership(availabilityId);
         professionalService.deleteAvailability(availabilityId);
         return ResponseEntity.noContent().build();
     }
