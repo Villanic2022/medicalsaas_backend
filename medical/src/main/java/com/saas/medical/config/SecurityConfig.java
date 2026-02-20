@@ -48,7 +48,8 @@ public class SecurityConfig {
             "http://localhost:5173",    // Vite dev server
             "http://127.0.0.1:3000",
                 "http://127.0.0.1:5173",
-                "https://medicalsaas-frontend.onrender.com"
+                "https://medicalsaas-frontend.onrender.com",
+                "http://q4gwk4wwokcc4wssw0wco48k.34.70.56.158.sslip.io"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
