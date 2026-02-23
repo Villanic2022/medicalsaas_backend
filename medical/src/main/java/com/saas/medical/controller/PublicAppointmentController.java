@@ -5,9 +5,11 @@ import com.saas.medical.model.dto.appointment.AppointmentResponse;
 import com.saas.medical.model.dto.appointment.AppointmentConfirmationResponse;
 import com.saas.medical.model.dto.professional.ProfessionalResponse;
 import com.saas.medical.model.dto.professional.ProfessionalAvailabilityResponse;
+import com.saas.medical.model.dto.procedure.ProcedureResponse;
 import com.saas.medical.model.dto.specialty.SpecialtyResponse;
 import com.saas.medical.model.dto.tenant.TenantResponse;
 import com.saas.medical.service.AppointmentService;
+import com.saas.medical.service.ProcedureService;
 import com.saas.medical.service.ProfessionalService;
 import com.saas.medical.service.SpecialtyService;
 import com.saas.medical.service.TenantService;
@@ -16,6 +18,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +31,11 @@ import java.time.LocalDateTime;
 @RequestMapping("/t/{tenantSlug}")
 @RequiredArgsConstructor
 @Tag(name = "Turnos Públicos", description = "API pública para reserva de turnos médicos")
+@Slf4j
 public class PublicAppointmentController {
 
     private final AppointmentService appointmentService;
+    private final ProcedureService procedureService;
     private final ProfessionalService professionalService;
     private final SpecialtyService specialtyService;
     private final TenantService tenantService;
@@ -61,6 +66,47 @@ public class PublicAppointmentController {
         List<ProfessionalAvailabilityResponse> availability = 
                 professionalService.getAvailabilityByTenantSlug(tenantSlug, professionalId);
         return ResponseEntity.ok(availability);
+    }
+
+    @GetMapping("/professionals/{professionalId}/procedures")
+    @Operation(summary = "Obtener procedimientos de un profesional",
+               description = "Lista los procedimientos activos de la especialidad del profesional")
+    public ResponseEntity<List<ProcedureResponse>> getProfessionalProcedures(
+            @Parameter(description = "Slug del consultorio") @PathVariable String tenantSlug,
+            @Parameter(description = "ID del profesional") @PathVariable Long professionalId) {
+        try {
+            log.info("=== GET /t/{}/professionals/{}/procedures (PÚBLICO) llamado ===", tenantSlug, professionalId);
+            // Obtener el profesional para conocer su especialidad
+            ProfessionalResponse professional = professionalService.findByIdAndTenantSlug(professionalId, tenantSlug);
+            // Filtrar procedimientos por la especialidad del profesional
+            List<ProcedureResponse> procedures = procedureService.findByTenantSlugAndSpecialty(
+                    tenantSlug,
+                    professional.getSpecialty().getId()
+            );
+            log.info("=== Procedimientos encontrados para profesional {} (especialidad {}) en tenant '{}': {} ===",
+                    professionalId, professional.getSpecialty().getId(), tenantSlug, procedures.size());
+            return ResponseEntity.ok(procedures);
+        } catch (Exception e) {
+            log.error("=== ERROR en GET /t/{}/professionals/{}/procedures: {} ===",
+                    tenantSlug, professionalId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @GetMapping("/procedures")
+    @Operation(summary = "Obtener procedimientos",
+               description = "Lista todos los procedimientos activos del consultorio")
+    public ResponseEntity<List<ProcedureResponse>> getProcedures(
+            @Parameter(description = "Slug del consultorio") @PathVariable String tenantSlug) {
+        try {
+            log.info("=== GET /t/{}/procedures (PÚBLICO) llamado ===", tenantSlug);
+            List<ProcedureResponse> procedures = procedureService.findAllByTenantSlug(tenantSlug);
+            log.info("=== Procedimientos encontrados para tenant '{}': {} ===", tenantSlug, procedures.size());
+            return ResponseEntity.ok(procedures);
+        } catch (Exception e) {
+            log.error("=== ERROR en GET /t/{}/procedures: {} ===", tenantSlug, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @GetMapping("/specialties")

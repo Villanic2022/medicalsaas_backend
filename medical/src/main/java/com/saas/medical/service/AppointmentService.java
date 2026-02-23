@@ -6,10 +6,12 @@ import com.saas.medical.model.dto.appointment.AppointmentRequest;
 import com.saas.medical.model.dto.appointment.AppointmentResponse;
 import com.saas.medical.model.entity.Appointment;
 import com.saas.medical.model.entity.Patient;
+import com.saas.medical.model.entity.Procedure;
 import com.saas.medical.model.entity.Professional;
 import com.saas.medical.model.entity.Tenant;
 import com.saas.medical.repository.AppointmentRepository;
 import com.saas.medical.repository.PatientRepository;
+import com.saas.medical.repository.ProcedureRepository;
 import com.saas.medical.repository.ProfessionalRepository;
 import com.saas.medical.repository.TenantRepository;
 import com.saas.medical.repository.UserRepository;
@@ -35,6 +37,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final ProfessionalRepository professionalRepository;
+    private final ProcedureRepository procedureRepository;
     private final TenantRepository tenantRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
@@ -49,10 +52,27 @@ public class AppointmentService {
         Professional professional = professionalRepository.findByIdAndTenantId(request.getProfessionalId(), tenant.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Profesional no encontrado"));
 
-        // Verificar que el horario esté disponible
+        // Buscar procedimiento si se especifica
+        Procedure procedure = null;
+        Integer durationMinutes = tenant.getAppointmentDurationMinutes(); // Default del tenant
+
+        if (request.getProcedureId() != null) {
+            procedure = procedureRepository.findByIdAndTenantId(request.getProcedureId(), tenant.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Procedimiento no encontrado: " + request.getProcedureId()));
+            durationMinutes = procedure.getDurationMinutes();
+        }
+
+        // Si se especifica duración explícita, usarla (tiene prioridad)
+        if (request.getDurationMinutes() != null && request.getDurationMinutes() > 0) {
+            durationMinutes = request.getDurationMinutes();
+        }
+
         LocalDateTime appointmentDateTime = request.getStartDateTime();
-        if (appointmentRepository.existsAppointmentAtTime(professional.getId(), appointmentDateTime)) {
-            throw new BusinessException("El horario seleccionado no está disponible");
+        LocalDateTime endDateTime = appointmentDateTime.plusMinutes(durationMinutes);
+
+        // Verificar que el horario esté disponible (considerando el rango completo)
+        if (appointmentRepository.existsOverlappingAppointment(professional.getId(), appointmentDateTime, endDateTime)) {
+            throw new BusinessException("El horario seleccionado no está disponible - existe solapamiento con otro turno");
         }
 
         // Verificar que la fecha no sea en el pasado
@@ -63,9 +83,6 @@ public class AppointmentService {
         // Buscar o crear paciente
         Patient patient = findOrCreatePatient(tenant.getId(), request);
 
-        // Calcular hora de fin (duración por defecto del tenant)
-        LocalDateTime endDateTime = appointmentDateTime.plusMinutes(tenant.getAppointmentDurationMinutes());
-
         // Crear appointment
         Appointment appointment = new Appointment();
         appointment.setTenantId(tenant.getId());
@@ -73,6 +90,8 @@ public class AppointmentService {
         appointment.setPatient(patient);
         appointment.setStartDateTime(appointmentDateTime);
         appointment.setEndDateTime(endDateTime);
+        appointment.setDurationMinutes(durationMinutes);
+        appointment.setProcedure(procedure);
         appointment.setStatus(Appointment.AppointmentStatus.CONFIRMED);
         appointment.setNotes(request.getNotes());
 
@@ -252,13 +271,24 @@ public class AppointmentService {
     }
 
     private AppointmentResponse mapToResponse(Appointment appointment, Tenant tenant) {
+        AppointmentResponse.ProcedureInfo procedureInfo = null;
+        if (appointment.getProcedure() != null) {
+            procedureInfo = AppointmentResponse.ProcedureInfo.builder()
+                    .id(appointment.getProcedure().getId())
+                    .name(appointment.getProcedure().getName())
+                    .durationMinutes(appointment.getProcedure().getDurationMinutes())
+                    .build();
+        }
+
         return AppointmentResponse.builder()
                 .id(appointment.getId())
                 .startDateTime(appointment.getStartDateTime())
                 .endDateTime(appointment.getEndDateTime())
+                .durationMinutes(appointment.getDurationMinutes())
                 .status(appointment.getStatus())
                 .notes(appointment.getNotes())
                 .createdAt(appointment.getCreatedAt())
+                .procedure(procedureInfo)
                 .professional(AppointmentResponse.ProfessionalInfo.builder()
                         .id(appointment.getProfessional().getId())
                         .firstName(appointment.getProfessional().getFirstName())

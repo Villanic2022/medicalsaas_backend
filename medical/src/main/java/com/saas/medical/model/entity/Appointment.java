@@ -34,6 +34,13 @@ public class Appointment {
     @Column(name = "end_date_time", nullable = false)
     private LocalDateTime endDateTime;
 
+    @Column(name = "duration_minutes")
+    private Integer durationMinutes = 30;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "procedure_id")
+    private Procedure procedure;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private AppointmentStatus status = AppointmentStatus.CONFIRMED;

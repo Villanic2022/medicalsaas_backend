@@ -17,6 +17,7 @@ public class AppointmentResponse {
     private Long id;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
+    private Integer durationMinutes;
     private Appointment.AppointmentStatus status;
     private String notes;
     private LocalDateTime createdAt;
@@ -26,6 +27,9 @@ public class AppointmentResponse {
 
     // Información del paciente
     private PatientInfo patient;
+
+    // Información del procedimiento (opcional)
+    private ProcedureInfo procedure;
 
     @Data
     @Builder
@@ -53,5 +57,15 @@ public class AppointmentResponse {
         private String phone;
         private String insuranceName;
         private String insuranceNumber;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ProcedureInfo {
+        private Long id;
+        private String name;
+        private Integer durationMinutes;
     }
 }

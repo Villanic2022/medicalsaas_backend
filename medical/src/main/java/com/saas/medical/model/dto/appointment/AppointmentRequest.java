@@ -14,6 +14,10 @@ public class AppointmentRequest {
     @NotNull(message = "La fecha y hora de inicio es requerida")
     private LocalDateTime startDateTime;
 
+    private Integer durationMinutes;
+
+    private Long procedureId;
+
     private String notes;
 
     // Datos del paciente

@@ -125,6 +125,24 @@ public class ProfessionalService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Busca un profesional por ID y slug del tenant (para endpoints públicos)
+     */
+    @Transactional(readOnly = true)
+    public ProfessionalResponse findByIdAndTenantSlug(Long professionalId, String tenantSlug) {
+        Tenant tenant = tenantRepository.findBySlugAndActive(tenantSlug, true)
+                .orElseThrow(() -> new ResourceNotFoundException("Tenant", "slug", tenantSlug));
+
+        Professional professional = professionalRepository.findById(professionalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Professional", "id", professionalId));
+
+        if (!professional.getTenantId().equals(tenant.getId())) {
+            throw new ResourceNotFoundException("Professional", "id", professionalId);
+        }
+
+        return mapToResponse(professional);
+    }
+
     @Transactional(readOnly = true)
     public ProfessionalResponse findById(Long id) {
         try {
