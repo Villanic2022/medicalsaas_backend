@@ -32,6 +32,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
            "AND a.startDateTime = :startDateTime AND a.status != 'CANCELLED'")
     boolean existsAppointmentAtTime(Long professionalId, LocalDateTime startDateTime);
 
+    /**
+     * Verifica si existe un turno que se solape con el rango dado.
+     * Detecta solapamiento cuando: el inicio del nuevo turno es antes del fin del existente
+     * Y el fin del nuevo turno es después del inicio del existente.
+     */
+    @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.professional.id = :professionalId " +
+           "AND a.status != 'CANCELLED' " +
+           "AND a.startDateTime < :endDateTime " +
+           "AND a.endDateTime > :startDateTime")
+    boolean existsOverlappingAppointment(Long professionalId, LocalDateTime startDateTime, LocalDateTime endDateTime);
+
     @Query("SELECT a FROM Appointment a WHERE a.tenantId = :tenantId " +
            "AND a.startDateTime >= :fromDate AND a.startDateTime <= :toDate " +
            "ORDER BY a.startDateTime")
