@@ -177,13 +177,26 @@ public class ProcedureService {
      */
     @Transactional(readOnly = true)
     public List<ProcedureResponse> findByTenantSlugAndSpecialty(String tenantSlug, Long specialtyId) {
+        log.info("🔍 findByTenantSlugAndSpecialty - tenantSlug: {}, specialtyId: {}", tenantSlug, specialtyId);
+
         Tenant tenant = tenantRepository.findBySlugAndActive(tenantSlug, true)
                 .orElseThrow(() -> new ResourceNotFoundException("Consultorio no encontrado: " + tenantSlug));
 
-        return procedureRepository.findByTenantIdAndSpecialtyIdAndActiveTrue(tenant.getId(), specialtyId)
-                .stream()
+        log.info("🔍 Tenant encontrado: {} (ID: {})", tenant.getName(), tenant.getId());
+
+        List<Procedure> procedures = procedureRepository.findByTenantIdAndSpecialtyIdAndActiveTrue(tenant.getId(), specialtyId);
+
+        log.info("🔍 Procedimientos encontrados en BD: {}", procedures.size());
+        procedures.forEach(p -> log.info("   - {} (ID: {}, SpecialtyID: {})",
+            p.getName(), p.getId(), p.getSpecialty() != null ? p.getSpecialty().getId() : "NULL"));
+
+        List<ProcedureResponse> responses = procedures.stream()
                 .map(ProcedureResponse::fromEntity)
                 .collect(Collectors.toList());
+
+        log.info("🔍 Procedimientos a retornar: {}", responses.size());
+
+        return responses;
     }
 
     @Transactional(readOnly = true)
@@ -198,24 +211,45 @@ public class ProcedureService {
     public ProcedureResponse create(ProcedureRequest request) {
         UUID tenantId = getCurrentTenantId();
 
-        // Verificar si ya existe un procedimiento con el mismo nombre
+        // Verificar si ya existe un procedimiento activo con el mismo nombre
         if (procedureRepository.existsByTenantIdAndName(tenantId, request.getName())) {
             throw new BusinessException("Ya existe un procedimiento con el nombre: " + request.getName());
         }
 
-        Procedure procedure = new Procedure();
-        procedure.setTenantId(tenantId);
-        procedure.setName(request.getName());
-        procedure.setDurationMinutes(request.getDurationMinutes() != null ? request.getDurationMinutes() : 30);
+        // Verificar si existe un procedimiento eliminado con el mismo nombre para reactivarlo
+        Optional<Procedure> existingProcedure = procedureRepository.findByTenantIdAndName(tenantId, request.getName());
 
-        if (request.getSpecialtyId() != null) {
-            Specialty specialty = specialtyRepository.findById(request.getSpecialtyId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Especialidad no encontrada: " + request.getSpecialtyId()));
-            procedure.setSpecialty(specialty);
+        Procedure procedure;
+        if (existingProcedure.isPresent() && !existingProcedure.get().getActive()) {
+            // Reactivar el procedimiento eliminado
+            procedure = existingProcedure.get();
+            procedure.setActive(true);
+            procedure.setDurationMinutes(request.getDurationMinutes() != null ? request.getDurationMinutes() : 30);
+
+            if (request.getSpecialtyId() != null) {
+                Specialty specialty = specialtyRepository.findById(request.getSpecialtyId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Especialidad no encontrada: " + request.getSpecialtyId()));
+                procedure.setSpecialty(specialty);
+            }
+
+            procedure = procedureRepository.save(procedure);
+            log.info("Procedimiento reactivado: {} (tenant: {})", procedure.getName(), tenantId);
+        } else {
+            // Crear nuevo procedimiento
+            procedure = new Procedure();
+            procedure.setTenantId(tenantId);
+            procedure.setName(request.getName());
+            procedure.setDurationMinutes(request.getDurationMinutes() != null ? request.getDurationMinutes() : 30);
+
+            if (request.getSpecialtyId() != null) {
+                Specialty specialty = specialtyRepository.findById(request.getSpecialtyId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Especialidad no encontrada: " + request.getSpecialtyId()));
+                procedure.setSpecialty(specialty);
+            }
+
+            procedure = procedureRepository.save(procedure);
+            log.info("Procedimiento creado: {} (tenant: {})", procedure.getName(), tenantId);
         }
-
-        procedure = procedureRepository.save(procedure);
-        log.info("Procedimiento creado: {} (tenant: {})", procedure.getName(), tenantId);
 
         return ProcedureResponse.fromEntity(procedure);
     }

@@ -20,13 +20,13 @@ public interface ProcedureRepository extends JpaRepository<Procedure, Long> {
 
     Optional<Procedure> findByIdAndTenantId(Long id, UUID tenantId);
 
-    @Query("SELECT p FROM Procedure p WHERE p.tenantId = :tenantId AND p.specialty.id = :specialtyId AND p.active = true ORDER BY p.name")
+    @Query("SELECT p FROM Procedure p LEFT JOIN FETCH p.specialty WHERE p.tenantId = :tenantId AND p.specialty.id = :specialtyId AND p.active = true ORDER BY p.name")
     List<Procedure> findByTenantIdAndSpecialtyIdAndActiveTrue(UUID tenantId, Long specialtyId);
 
     @Query("SELECT p FROM Procedure p WHERE p.tenantId = :tenantId AND p.name = :name")
     Optional<Procedure> findByTenantIdAndName(UUID tenantId, String name);
 
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Procedure p WHERE p.tenantId = :tenantId AND p.name = :name")
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Procedure p WHERE p.tenantId = :tenantId AND p.name = :name AND p.active = true")
     boolean existsByTenantIdAndName(UUID tenantId, String name);
 }
 
