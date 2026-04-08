@@ -176,15 +176,20 @@ public class AuthService {
     }
 
     private Tenant createTenantForOwner(RegisterRequest registerRequest) {
-        // Generar slug único basado en el nombre del propietario
-        String baseSlug = generateSlugFromName(registerRequest.getFirstName(), registerRequest.getLastName());
-        String uniqueSlug = ensureUniqueSlug(baseSlug);
-
         // Determinar nombre del consultorio
         String clinicName = registerRequest.getClinicName();
         if (clinicName == null || clinicName.trim().isEmpty()) {
             clinicName = "Consultorio Dr. " + registerRequest.getFirstName() + " " + registerRequest.getLastName();
         }
+
+        // Generar slug: si se ingresó nombre de consultorio, usarlo; si no, usar nombre del propietario
+        String baseSlug;
+        if (registerRequest.getClinicName() != null && !registerRequest.getClinicName().trim().isEmpty()) {
+            baseSlug = generateSlugFromClinicName(registerRequest.getClinicName());
+        } else {
+            baseSlug = generateSlugFromName(registerRequest.getFirstName(), registerRequest.getLastName());
+        }
+        String uniqueSlug = ensureUniqueSlug(baseSlug);
 
         // Crear tenant
         Tenant tenant = new Tenant();
@@ -219,6 +224,23 @@ public class AuthService {
             .replaceAll("^-|-$", "");
         
         return "consultorio-" + slug;
+    }
+
+    private String generateSlugFromClinicName(String clinicName) {
+        // Generar slug a partir del nombre del consultorio/clínica
+        String slug = clinicName
+            .toLowerCase()
+            .replaceAll("[áàäâ]", "a")
+            .replaceAll("[éèëê]", "e")
+            .replaceAll("[íìïî]", "i")
+            .replaceAll("[óòöô]", "o")
+            .replaceAll("[úùüû]", "u")
+            .replaceAll("[ñ]", "n")
+            .replaceAll("[^a-z0-9-]", "-")
+            .replaceAll("-+", "-")
+            .replaceAll("^-|-$", "");
+
+        return slug;
     }
 
     private String ensureUniqueSlug(String baseSlug) {
